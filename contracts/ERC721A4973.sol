@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
 // ERC721A4973 Contracts v3.3.0
-// Creator: Chiru Labs
 
 pragma solidity ^0.8.4;
 
 import './IERC721A4973.sol';
-import './interfaces/IERC4973.sol';
 
 /**
  * @dev ERC721 token receiver interface.
@@ -29,7 +27,7 @@ interface ERC721A4973__IERC721Receiver {
  *
  * Assumes that the maximum token id cannot exceed 2**256 - 1 (max value of uint256).
  */
-abstract contract ERC721A4973 is IERC721A4973, IERC4973 {
+abstract contract ERC721A4973 is IERC721A4973 {
     // Mask of an entry in packed address data.
     uint256 private constant BITMASK_ADDRESS_DATA_ENTRY = (1 << 64) - 1;
 
@@ -50,7 +48,7 @@ abstract contract ERC721A4973 is IERC721A4973, IERC4973 {
 
     // The bit mask of the `burned` bit in packed ownership.
     uint256 private constant BITMASK_BURNED = 1 << 224;
-    
+
     // The bit position of the `nextInitialized` bit in packed ownership.
     uint256 private constant BITPOS_NEXT_INITIALIZED = 225;
 
@@ -96,7 +94,7 @@ abstract contract ERC721A4973 is IERC721A4973, IERC4973 {
     }
 
     /**
-     * @dev Returns the starting token ID. 
+     * @dev Returns the starting token ID.
      * To change the starting token ID, please override this function.
      */
     function _startTokenId() internal view virtual returns (uint256) {
@@ -112,7 +110,7 @@ abstract contract ERC721A4973 is IERC721A4973, IERC4973 {
 
     /**
      * @dev Returns the total number of tokens in existence.
-     * Burned tokens will reduce the count. 
+     * Burned tokens will reduce the count.
      * To get the total number of tokens minted, please see `_totalMinted`.
      */
     function totalSupply() public view override returns (uint256) {
@@ -190,7 +188,8 @@ abstract contract ERC721A4973 is IERC721A4973, IERC4973 {
     function _setAux(address owner, uint64 aux) internal {
         uint256 packed = _packedAddressData[owner];
         uint256 auxCasted;
-        assembly { // Cast aux without masking.
+        assembly {
+            // Cast aux without masking.
             auxCasted := aux
         }
         packed = (packed & BITMASK_AUX_COMPLEMENT) | (auxCasted << BITPOS_AUX);
@@ -262,7 +261,7 @@ abstract contract ERC721A4973 is IERC721A4973, IERC4973 {
     /**
      * @dev See {IERC721-ownerOf}.
      */
-    function ownerOf(uint256 tokenId) public view override (IERC4973, IERC721A4973) returns (address) {
+    function ownerOf(uint256 tokenId) public view override returns (address) {
         return address(uint160(_packedOwnershipOf(tokenId)));
     }
 
@@ -482,7 +481,7 @@ abstract contract ERC721A4973 is IERC721A4973, IERC4973 {
             _packedOwnerships[tokenId] =
                 _addressToUint256(from) |
                 (block.timestamp << BITPOS_START_TIMESTAMP) |
-                BITMASK_BURNED | 
+                BITMASK_BURNED |
                 BITMASK_NEXT_INITIALIZED;
 
             // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
@@ -550,9 +549,9 @@ abstract contract ERC721A4973 is IERC721A4973, IERC4973 {
      */
     function _toString(uint256 value) internal pure returns (string memory ptr) {
         assembly {
-            // The maximum value of a uint256 contains 78 digits (1 byte per digit), 
+            // The maximum value of a uint256 contains 78 digits (1 byte per digit),
             // but we allocate 128 bytes to keep the free memory pointer 32-byte word aliged.
-            // We will need 1 32-byte word to store the length, 
+            // We will need 1 32-byte word to store the length,
             // and 3 32-byte words to store a maximum of 78 digits. Total: 32 + 3 * 32 = 128.
             ptr := add(mload(0x40), 128)
             // Update the free memory pointer to allocate.
@@ -565,7 +564,7 @@ abstract contract ERC721A4973 is IERC721A4973, IERC4973 {
             // The following is essentially a do-while loop that also handles the zero case.
             // Costs a bit more than early returning for the zero case,
             // but cheaper in terms of deployment and overall runtime costs.
-            for { 
+            for {
                 // Initialize and perform the first pass without check.
                 let temp := value
                 // Move the pointer 1 byte leftwards to point to an empty character slot.
@@ -573,14 +572,15 @@ abstract contract ERC721A4973 is IERC721A4973, IERC4973 {
                 // Write the character to the pointer. 48 is the ASCII index of '0'.
                 mstore8(ptr, add(48, mod(temp, 10)))
                 temp := div(temp, 10)
-            } temp { 
+            } temp {
                 // Keep dividing `temp` until zero.
                 temp := div(temp, 10)
-            } { // Body of the for loop.
+            } {
+                // Body of the for loop.
                 ptr := sub(ptr, 1)
                 mstore8(ptr, add(48, mod(temp, 10)))
             }
-            
+
             let length := sub(end, ptr)
             // Move the pointer 32 bytes leftwards to make room for the length.
             ptr := sub(ptr, 32)

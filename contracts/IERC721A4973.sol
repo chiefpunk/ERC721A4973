@@ -8,7 +8,16 @@ pragma solidity ^0.8.4;
  * @dev Interface of an ERC721A compliant contract.
  */
 interface IERC721A4973 {
-
+    /// @dev This emits when a new token is created and bound to an account by
+    /// any mechanism.
+    /// Note: For a reliable `_from` parameter, retrieve the transaction's
+    /// authenticated `from` field.
+    event Attest(address indexed _to, uint256 indexed _tokenId);
+    /// @dev This emits when an existing ABT is revoked from an account and
+    /// destroyed by any mechanism.
+    /// Note: For a reliable `_from` parameter, retrieve the transaction's
+    /// authenticated `from` field.
+    event Revoke(address indexed _to, uint256 indexed _tokenId);
     /**
      * Cannot query the balance for the zero address.
      */
